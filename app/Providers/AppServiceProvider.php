@@ -14,6 +14,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        if (!function_exists('base_url')) {
+            function base_url($path = '') {
+                return url($path);
+            }
+        }
+
         spl_autoload_register(function ($class) {
             if (strpos($class, 'App\\') === 0) {
                 $relative = substr($class, 4);

@@ -1,45 +1,38 @@
-<nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-    <div class="navbar-brand-wrapper d-flex justify-content-between align-items-center px-3">
-        <a class="navbar-brand brand-logo d-none d-lg-block font-weight-bold text-white text-decoration-none" href="{{ route('home') }}" style="font-size: 1.15rem; letter-spacing: 0.5px;">
-            <i class="typcn typcn-th-large mr-1"></i> Syafana Motor
+<nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background: radial-gradient(circle at 20% 50%, #102a4e 0%, #0a1931 60%, #070d1e 100%) !important; border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;">
+    <div class="navbar-brand-wrapper d-flex justify-content-between align-items-center px-3" style="background: transparent !important; border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important; border-right: 1px solid rgba(56, 189, 248, 0.15) !important;">
+        <a class="navbar-brand brand-logo d-none d-lg-flex align-items-center text-decoration-none" href="{{ route('home') }}">
+            <img src="{{ asset('asset/images/logo-ascend-square.png') }}" alt="Logo ASCEND" class="mr-2" style="width: 38px; height: 38px; border-radius: 9px; object-fit: cover; box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35); border: 1px solid rgba(56, 189, 248, 0.3);">
+            <div class="d-flex flex-column text-left">
+                <span class="font-weight-bold" style="color: #ffffff; font-size: 1.08rem; letter-spacing: 0.3px; line-height: 1.15;">ASCEND</span>
+                <span style="color: #7dd3fc; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">PT. IAS SUPPORT INDONESIA</span>
+            </div>
         </a>
-        <a class="navbar-brand brand-logo-mini d-lg-none font-weight-bold text-white text-decoration-none" href="{{ route('home') }}" style="font-size: 1.1rem;">
-            <i class="typcn typcn-th-large"></i> SJM
+        <a class="navbar-brand brand-logo-mini d-lg-none d-flex align-items-center text-decoration-none" href="{{ route('home') }}">
+            <img src="{{ asset('asset/images/logo-ascend-square.png') }}" alt="Logo ASCEND" style="width: 34px; height: 34px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); border: 1px solid rgba(56, 189, 248, 0.3);">
         </a>
-        <button class="navbar-toggler navbar-toggler align-self-center d-none d-lg-block" type="button" data-toggle="minimize">
-            <span class="typcn typcn-th-menu text-white"></span>
+        <button class="navbar-toggler navbar-toggler align-self-center d-none d-lg-block p-1 border-0 bg-transparent" type="button" data-toggle="minimize" style="color: #94a3b8; transition: color 0.2s ease;">
+            <span class="typcn typcn-th-menu" style="font-size: 1.25rem;"></span>
         </button>
     </div>
 
-    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-between px-3">
-        <div class="d-flex align-items-center">
-            <h4 class="mb-0 font-weight-bold d-none d-md-block text-dark" style="letter-spacing: -0.2px;">
-                Syafana Jaya Motor
-            </h4>
-        </div>
-
+    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end px-3" style="background: transparent !important; border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;">
         <ul class="navbar-nav navbar-nav-right d-flex align-items-center">
             <li class="nav-item d-flex align-items-center mr-2 mr-md-3">
-                <div class="badge badge-pill badge-primary px-2 px-md-3 py-2 d-flex align-items-center" style="font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-                    <i class="typcn typcn-user mr-1"></i>
-                    <span class="d-none d-sm-inline">{{ Auth::user()->name }}</span>
-                    <span class="d-sm-none">{{ Str::limit(Auth::user()->name, 8) }}</span>
-                    &nbsp;<span class="opacity-75" style="opacity: 0.85;">(@if (Auth::user()->karyawan)Karyawan @elseif(Auth::user()->admin){{ Auth::user()->admin->role }}@else Admin @endif)</span>
+                <div class="badge badge-pill px-3 py-1.5 d-flex align-items-center" style="font-size: 0.84rem; font-weight: 600; background: rgba(2, 132, 199, 0.18); color: #e0f2fe; border: 1px solid rgba(56, 189, 248, 0.35);">
+                    <div class="rounded-circle mr-2 d-flex align-items-center justify-content-center text-white" style="width: 22px; height: 22px; background: #0284c7; font-size: 0.72rem;">
+                        <i class="typcn typcn-user"></i>
+                    </div>
+                    <span>{{ Auth::user()->name }}</span>
                 </div>
             </li>
             <li class="nav-item">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                     @csrf
                 </form>
-                <a class="btn btn-sm btn-outline-danger d-flex align-items-center px-2 px-md-3 py-1 font-weight-bold" href="javascript:void(0)" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="border-radius: 20px; font-size: 0.78rem;">
-                    <i class="typcn typcn-eject mr-1"></i>
-                    <span class="d-none d-sm-inline">Logout</span>
+                <a class="btn btn-sm d-flex align-items-center px-3 py-1.5 font-weight-bold" href="javascript:void(0)" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="border-radius: 20px; font-size: 0.8rem; background: rgba(225, 29, 72, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.35); transition: all 0.2s ease;">
+                    <i class="typcn typcn-power mr-1" style="font-size: 0.95rem;"></i>
+                    <span>Keluar</span>
                 </a>
-            </li>
-            <li class="nav-item d-lg-none ml-2">
-                <button class="navbar-toggler navbar-toggler-right p-0 border-0 bg-transparent align-self-center" type="button" data-toggle="offcanvas">
-                    <span class="typcn typcn-th-menu" style="font-size: 1.5rem; color: #5a5a5a;"></span>
-                </button>
             </li>
         </ul>
     </div>

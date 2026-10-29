@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,17 +5,133 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Syafana Jaya Motor</title>
+  <title>ASCEND - Login</title>
   <!-- base:css -->
-  <link rel="stylesheet" href="asset/vendors/typicons/typicons.css">
-  <link rel="stylesheet" href="asset/vendors/css/vendor.bundle.base.css">
-  <!-- endinject -->
-  <!-- plugin css for this page -->
-  <!-- End plugin css for this page -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('asset/vendors/typicons/typicons.css') }}">
+  <link rel="stylesheet" href="{{ asset('asset/vendors/css/vendor.bundle.base.css') }}">
   <!-- inject:css -->
-  <link rel="stylesheet" href="asset/css/vertical-layout-light/style.css">
-  <!-- endinject -->
-  <link rel="shortcut icon" href="asset/images/favicon.png" />
+  <link rel="stylesheet" href="{{ asset('asset/css/vertical-layout-light/style.css') }}">
+  <link rel="shortcut icon" href="{{ asset('asset/images/favicon.png') }}?v=2" />
+  <link rel="icon" type="image/png" href="{{ asset('asset/images/favicon.png') }}?v=2" />
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      background: radial-gradient(circle at 50% 28%, #102a4e 0%, #0a1931 55%, #050d1a 100%) !important;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container-scroller,
+    .page-body-wrapper,
+    .content-wrapper {
+      background: transparent !important;
+      min-height: 100vh;
+    }
+
+    /* Kotak Login Menimbul (Elevated 3D Floating Card) */
+    .auth-form-light {
+      background: rgba(0, 0, 0, 0.35) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border-radius: 20px !important;
+      padding: 2.5rem 2.2rem !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 
+        0 24px 60px -10px rgba(0, 0, 0, 0.55),
+        0 10px 25px -5px rgba(0, 0, 0, 0.35),
+        0 0 45px rgba(2, 132, 199, 0.22) !important;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .auth-form-light:hover {
+      box-shadow: 
+        0 30px 70px -10px rgba(0, 0, 0, 0.65),
+        0 14px 30px -5px rgba(0, 0, 0, 0.4),
+        0 0 55px rgba(2, 132, 199, 0.3) !important;
+      transform: translateY(-2px);
+    }
+
+    /* Logo Styling */
+    .brand-logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .brand-logo-img {
+      height: 48px;
+      width: auto;
+      max-width: 215px;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.28);
+    }
+
+    /* Form Fields */
+    .form-control-lg {
+      border-radius: 10px !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+      font-size: 0.95rem !important;
+      padding: 0.75rem 1rem !important;
+      height: auto !important;
+      transition: all 0.2s ease !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #ffffff !important;
+    }
+
+    .form-control-lg::placeholder {
+      color: rgba(255, 255, 255, 0.45) !important;
+    }
+
+    .form-control-lg:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3.5px rgba(56, 189, 248, 0.22) !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Tombol Sign In Modern */
+    .btn-primary.auth-form-btn {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      border: none !important;
+      border-radius: 10px !important;
+      font-size: 0.95rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.5px !important;
+      padding: 0.8rem 1.5rem !important;
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .btn-primary.auth-form-btn:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.5) !important;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary.auth-form-btn:active {
+      transform: translateY(1px);
+    }
+
+    .auth-link {
+      color: #0284c7 !important;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .auth-link:hover {
+      color: #0369a1 !important;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 
 <body>
@@ -24,58 +139,48 @@
     <div class="container-fluid page-body-wrapper full-page-wrapper">
       <div class="content-wrapper d-flex align-items-center auth px-0">
         <div class="row w-100 mx-0">
-          <div class="col-lg-4 mx-auto">
-            <div class="auth-form-light text-left py-5 px-4 px-sm-5">
-              {{-- <div class="brand-logo">
-                <img src="asset/images/logo-dark.svg" alt="logo">
-              </div> --}}
-              <h4>Login Syafana Jaya Motor</h4>
-              <h6 class="font-weight-light">Tolong Masukkan Email dan Password</h6>
-              <form class="pt-3" method="POST" action="{{ route('login') }}">
-                        @csrf
-                <div class="form-group">
-                  <!-- <input type="email" class="form-control form-control-lg" id="exampleInputEmail1" placeholder="Email"> -->
-                  <input id="email"  type="email" class="form-control form-control-lg @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder='Email' autofocus>
+          <div class="col-lg-4 col-md-6 col-sm-8 mx-auto px-3">
+            <div class="auth-form-light text-left">
+              <div class="brand-logo-container">
+                <img src="{{ asset('asset/images/logo-ascend-horizontal.png') }}" alt="ASCEND" class="brand-logo-img">
+              </div>
+              <div class="text-center mb-4">
+                <h4 class="font-weight-bold mb-1" style="font-size: 1.25rem; letter-spacing: -0.3px; color: #ffffff !important;">Login ASCEND</h4>
+                <span style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #94a3b8 !important;">PT. IAS SUPPORT INDONESIA</span>
+              </div>
 
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+              <form class="pt-2" method="POST" action="{{ route('login') }}">
+                @csrf
+                <div class="form-group mb-3">
+                  <input id="email" type="email" class="form-control form-control-lg @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="Email" autofocus>
+                  @error('email')
+                    <span class="invalid-feedback" role="alert">
+                      <strong>{{ $message }}</strong>
+                    </span>
+                  @enderror
                 </div>
-                <div class="form-group">
-                  <!-- <input type="password" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Password"> -->
-                  <input id="password" type="password" class="form-control form-control-lg @error('password') is-invalid @enderror" name="password" placeholder = 'Password' required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                <div class="form-group mb-3">
+                  <input id="password" type="password" class="form-control form-control-lg @error('password') is-invalid @enderror" name="password" placeholder="Password" required autocomplete="current-password">
+                  @error('password')
+                    <span class="invalid-feedback" role="alert">
+                      <strong>{{ $message }}</strong>
+                    </span>
+                  @enderror
                 </div>
-                <div class="mt-3">
-                  <button class="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn" type="submit" >SIGN IN</button>
-                  <!-- @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif -->
+                <div class="mt-4">
+                  <button class="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn" type="submit">SIGN IN</button>
                 </div>
-                <div class="my-2 d-flex justify-content-between align-items-center">
+                <div class="my-3 d-flex justify-content-between align-items-center">
                   <div class="form-check">
-                    <label class="form-check-label text-muted">
-                      <input type="checkbox" class="form-check-input">
+                    <label class="form-check-label text-muted" style="font-size: 0.85rem;">
+                      <input type="checkbox" class="form-check-input" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
                       Keep me signed in
                     </label>
                   </div>
-                  <a href="{{ route('password.request') }}" class="auth-link text-black">Forgot password?</a>
+                  @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" class="auth-link">Forgot password?</a>
+                  @endif
                 </div>
-             
-                {{-- <div class="mb-2">
-                  <button type="button" class="btn btn-block btn-facebook auth-form-btn">
-                    <i class="typcn typcn-social-facebook mr-2"></i>Connect using facebook
-                  </button>
-                </div> --}}
               </form>
             </div>
           </div>
@@ -87,15 +192,12 @@
   </div>
   <!-- container-scroller -->
   <!-- base:js -->
-  <script src="asset/vendors/js/vendor.bundle.base.js"></script>
-  <!-- endinject -->
+  <script src="{{ asset('asset/vendors/js/vendor.bundle.base.js') }}"></script>
   <!-- inject:js -->
-  <script src="asset/js/off-canvas.js"></script>
-  <script src="asset/js/hoverable-collapse.js"></script>
-  <script src="asset/js/template.js"></script>
-  <script src="asset/js/settings.js"></script>
-  <script src="asset/js/todolist.js"></script>
-  <!-- endinject -->
+  <script src="{{ asset('asset/js/off-canvas.js') }}"></script>
+  <script src="{{ asset('asset/js/hoverable-collapse.js') }}"></script>
+  <script src="{{ asset('asset/js/template.js') }}"></script>
+  <script src="{{ asset('asset/js/settings.js') }}"></script>
+  <script src="{{ asset('asset/js/todolist.js') }}"></script>
 </body>
-
 </html>

@@ -1,139 +1,155 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         @if (!Auth::user()->karyawan)
-        <li class="nav-item">
+        <li class="nav-item {{ request()->routeIs('home') ? 'active' : '' }}">
             <a class="nav-link" href="{{route('home')}}">
                 <i class="typcn typcn-device-desktop menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
-                {{-- <div class="badge badge-danger">new</div> --}}
             </a>
         </li>
         @endif
 
-        <li class="nav-item">
-            <a class="nav-link" data-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-                <i class="typcn typcn-user-add-outline menu-icon"></i>
+        @php
+            $isStruktur = request()->routeIs('proyek*', 'unit*', 'jabatan*', 'karyawan*');
+        @endphp
+        <li class="nav-item {{ $isStruktur ? 'active' : '' }}">
+            <a class="nav-link" data-toggle="collapse" href="#struktur-menu" aria-expanded="{{ $isStruktur ? 'true' : 'false' }}" aria-controls="struktur-menu">
+                <i class="typcn typcn-flow-children menu-icon"></i>
                 <span class="menu-title">Struktur</span>
                 <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="auth">
+            <div class="collapse {{ $isStruktur ? 'show' : '' }}" id="struktur-menu">
                 <ul class="nav flex-column sub-menu">
-                    {{-- <li class="{{ route::is('karyawan') ? 'active' : '' }}"><a href="{{route('karyawan')}}"><i
-                            class="zmdi zmdi-dot-circle-alt"></i> Karyawan</a>
-        </li> --}}
-        <li class="nav-item"> <a class="nav-link" href="{{route('karyawan')}}"> Daftar Karyawan</a></li>
-        @if (!Auth::user()->karyawan)
-        <li class="nav-item"> <a class="nav-link" href="{{route('departemen')}}"> Departemen </a></li>
-        <li class="nav-item"> <a class="nav-link" href="{{route('jabatan')}}"> Jabatan</a></li>
+                    @if (!Auth::user()->karyawan)
+                    <li class="nav-item {{ request()->routeIs('proyek*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('proyek') }}"><i class="typcn typcn-briefcase mr-1"></i> Proyek</a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('unit*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('unit') }}"><i class="typcn typcn-th-small mr-1"></i> Unit</a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('jabatan*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('jabatan') }}"><i class="typcn typcn-tags mr-1"></i> Jabatan</a>
+                    </li>
+                    @endif
+                    <li class="nav-item {{ request()->routeIs('karyawan*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('karyawan') }}"><i class="typcn typcn-group mr-1"></i> Daftar Karyawan</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        @php
+            $isPenilaianKerja = request()->routeIs('rekap_presensi*', 'wwc_kriteria*', 'wwc_indikator*', 'wwc_form_penilaian*', 'wwc_form_assessor*', 'wwc_penilaian*', 'cbt_*', 'bank_soal*', 'cbt_setting*', 'ujian_cbt*', 'hasil.*');
+            $isPresensi = request()->routeIs('rekap_presensi*');
+            $isWawancara = request()->routeIs('wwc_kriteria*', 'wwc_indikator*', 'wwc_form_penilaian*', 'wwc_form_assessor*', 'wwc_penilaian*');
+            $isCbt = request()->routeIs('cbt_bank_soal*', 'cbt_ujian*', 'cbt_pengerjaan*', 'bank_soal*', 'cbt_setting*', 'ujian_cbt*');
+            $isHasil = request()->routeIs('hasil.*');
+        @endphp
+        <li class="nav-item {{ $isPenilaianKerja ? 'active' : '' }}">
+            <a class="nav-link" data-toggle="collapse" href="#penilaian-kerja" aria-expanded="{{ $isPenilaianKerja ? 'true' : 'false' }}"
+                aria-controls="penilaian-kerja">
+                <i class="typcn typcn-film menu-icon"></i>
+                <span class="menu-title">Penilaian Kerja</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse {{ $isPenilaianKerja ? 'show' : '' }}" id="penilaian-kerja">
+                <ul class="nav flex-column sub-menu">
+
+                    {{-- === PRESENSI === --}}
+                    <li class="nav-item {{ $isPresensi ? 'active' : '' }}">
+                        <a class="nav-link d-flex justify-content-between align-items-center"
+                           data-toggle="collapse" href="#sub-presensi" aria-expanded="{{ $isPresensi ? 'true' : 'false' }}">
+                            <span><i class="typcn typcn-calendar-outline mr-1"></i> Presensi</span>
+                            <i class="menu-arrow ml-auto"></i>
+                        </a>
+                        <div class="collapse {{ $isPresensi ? 'show' : '' }}" id="sub-presensi">
+                            <ul class="nav flex-column sub-menu" style="padding-left:1.2rem;">
+                                <li class="nav-item {{ request()->routeIs('rekap_presensi*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('rekap_presensi') }}">Rekap Presensi</a></li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    {{-- === WAWANCARA KOMPETENSI === --}}
+                    @php
+                        $isAssessor = \Illuminate\Support\Facades\DB::table('wwc_form_assessor')->where('id_user', Auth::id())->where('status', '!=', 8)->exists();
+                    @endphp
+                    @if (!Auth::user()->karyawan || $isAssessor)
+                    <li class="nav-item {{ $isWawancara ? 'active' : '' }}">
+                        <a class="nav-link d-flex justify-content-between align-items-center"
+                           data-toggle="collapse" href="#sub-wawancara" aria-expanded="{{ $isWawancara ? 'true' : 'false' }}">
+                            <span><i class="typcn typcn-messages mr-1"></i> Wawancara</span>
+                            <i class="menu-arrow ml-auto"></i>
+                        </a>
+                        <div class="collapse {{ $isWawancara ? 'show' : '' }}" id="sub-wawancara">
+                            <ul class="nav flex-column sub-menu" style="padding-left:1.2rem;">
+                                @if (!Auth::user()->karyawan)
+                                <li class="nav-item {{ request()->routeIs('wwc_kriteria*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('wwc_kriteria.index') }}">Kriteria</a></li>
+                                <li class="nav-item {{ request()->routeIs('wwc_indikator*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('wwc_indikator.index') }}">Indikator</a></li>
+                                <li class="nav-item {{ request()->routeIs('wwc_form_penilaian*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('wwc_form_penilaian.index') }}">Form Penilaian</a></li>
+                                <li class="nav-item {{ request()->routeIs('wwc_form_assessor*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('wwc_form_assessor.index') }}">Form Assessor</a></li>
+                                @endif
+                                <li class="nav-item {{ request()->routeIs('wwc_penilaian*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('wwc_penilaian.index') }}">Penilaian</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    @endif
+
+                    {{-- === CBT === --}}
+                    <li class="nav-item {{ $isCbt ? 'active' : '' }}">
+                        <a class="nav-link d-flex justify-content-between align-items-center"
+                           data-toggle="collapse" href="#sub-cbt" aria-expanded="{{ $isCbt ? 'true' : 'false' }}">
+                            <span><i class="typcn typcn-document-text mr-1"></i> CBT</span>
+                            <i class="menu-arrow ml-auto"></i>
+                        </a>
+                        <div class="collapse {{ $isCbt ? 'show' : '' }}" id="sub-cbt">
+                            <ul class="nav flex-column sub-menu" style="padding-left:1.2rem;">
+                                @if (!Auth::user()->karyawan)
+                                <li class="nav-item {{ request()->routeIs('cbt_bank_soal*', 'bank_soal*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('cbt_bank_soal.index') }}">Bank Soal</a></li>
+                                <li class="nav-item {{ request()->routeIs('cbt_ujian*', 'cbt_setting*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('cbt_ujian.index') }}">Master Ujian</a></li>
+                                @endif
+                                <li class="nav-item {{ request()->routeIs('cbt_pengerjaan*', 'ujian_cbt*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('cbt_pengerjaan.index') }}">Pengerjaan Ujian</a></li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    {{-- === HASIL === --}}
+                    <li class="nav-item {{ $isHasil ? 'active' : '' }}">
+                        <a class="nav-link d-flex justify-content-between align-items-center"
+                           data-toggle="collapse" href="#sub-hasil" aria-expanded="{{ $isHasil ? 'true' : 'false' }}">
+                            <span><i class="typcn typcn-chart-bar-outline mr-1"></i> Hasil</span>
+                            <i class="menu-arrow ml-auto"></i>
+                        </a>
+                        <div class="collapse {{ $isHasil ? 'show' : '' }}" id="sub-hasil">
+                            <ul class="nav flex-column sub-menu" style="padding-left:1.2rem;">
+                                <li class="nav-item {{ request()->routeIs('hasil.keseluruhan*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('hasil.keseluruhan') }}"><i class="typcn typcn-chart-pie mr-1"></i> Hasil Keseluruhan</a></li>
+                                <li class="nav-item {{ request()->routeIs('hasil.presensi*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('hasil.presensi') }}"><i class="typcn typcn-calendar-outline mr-1"></i> Hasil Presensi</a></li>
+                                <li class="nav-item {{ request()->routeIs('hasil.wawancara*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('hasil.wawancara') }}"><i class="typcn typcn-messages mr-1"></i> Hasil Wawancara</a></li>
+                                <li class="nav-item {{ request()->routeIs('hasil.cbt*') ? 'active' : '' }}"><a class="nav-link" href="{{ route('hasil.cbt') }}"><i class="typcn typcn-document-text mr-1"></i> Hasil CBT</a></li>
+                            </ul>
+                        </div>
+                    </li>
+
+                </ul>
+            </div>
+        </li>
+
+        @if (Auth::user()->admin && Auth::user()->admin->role == 'superadmin')
+        @php
+            $isAdminMenu = request()->routeIs('log*', 'admin*');
+        @endphp
+        <li class="nav-item {{ $isAdminMenu ? 'active' : '' }}">
+            <a class="nav-link" data-toggle="collapse" href="#admin-menu" aria-expanded="{{ $isAdminMenu ? 'true' : 'false' }}" aria-controls="admin-menu">
+                <i class="typcn typcn-user-add-outline menu-icon"></i>
+                <span class="menu-title">Admin</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse {{ $isAdminMenu ? 'show' : '' }}" id="admin-menu">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item {{ request()->routeIs('log*') ? 'active' : '' }}"> <a class="nav-link" href="{{route('log')}}"> log </a></li>
+                    <li class="nav-item {{ request()->routeIs('admin*') ? 'active' : '' }}"> <a class="nav-link" href="{{route('admin')}}"> Daftar Admin </a></li>
+                </ul>
+            </div>
+        </li>
         @endif
     </ul>
-    </div>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
-            <i class="typcn typcn-compass menu-icon"></i>
-            <span class="menu-title">Kehadiran</span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="icons">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="{{route('absensi')}}">Presensi</a></li>
-                <li class="nav-item"> <a class="nav-link" href="{{route('pengajuanCuti')}}">Pengajuan Cuti</a></li>
-            </ul>
-        </div>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#form-elements" aria-expanded="false"
-            aria-controls="form-elements">
-            <i class="typcn typcn-film menu-icon"></i>
-            <span class="menu-title">Penilaian Kinerja </span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="form-elements">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{{route('sanksi')}}">Sanksi</a></li>
-                @if (!Auth::user()->karyawan)
-
-                <li class="nav-item"><a class="nav-link" href="{{route('kriteria')}}">Kriteria</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{route('indikator')}}">Indikator</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{route('form_penilaian')}}">Form Penilaian</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{route('penilaian')}}">Penilaian</a></li>
-                @endif
-                <li class="nav-item"><a class="nav-link" href="{{route('penghargaan')}}">Penghargaan</a></li>
-            </ul>
-        </div>
-    </li>
-    </li>
-    @if (!Auth::user()->karyawan)
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
-            <i class="typcn typcn-chart-pie-outline menu-icon"></i>
-            <span class="menu-title">Penjualan</span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="charts">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="{{route('penjualan')}}">Penjualan Saat ini</a></li>
-            </ul>
-        </div>
-    </li>
-    @endif
-    @if (Auth::user()->admin && Auth::user()->admin->role == 'superadmin')
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-            <i class="typcn typcn-user-add-outline menu-icon"></i>
-            <span class="menu-title">Admin</span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="auth">
-            <ul class="nav flex-column sub-menu">
-
-                <li class="nav-item"> <a class="nav-link" href={{route('log')}}> log </a></li>
-                <li class="nav-item"> <a class="nav-link" href={{route('admin')}}> Daftar Admin </a></li>
-
-
-            </ul>
-        </div>
-    </li>
-    @endif
-
-
-    {{-- @if (Auth::user()->karyawan)
-     
-        // $jam = date('H') ;
-    //  if ( $jam >= 7 && $jam <= 11) {
-    //    echo "<h6> Harap mengisi presensi <br> sebelum 10.00 !</h6>";
-    //  }
-
-    @endif --}}
-
-
-
- 
-        {{-- <class="nav-link" data-toggle="collapse" href="#error" aria-expanded="false" aria-controls="error"> --}}
-          {{-- <i class="typcn typcn-globe-outline menu-icon"></i> --}}
-        
-          {{-- <div class="badge badge-danger">Harap mengisi presensi</div> --}}
-     
-          {{-- <div class="badge badge-danger"></div> --}}
-          {{-- @endif --}}
-      
-  
-
-   
-     <!-- NOTIFIKASI PENINGAT PRESENSI -- START -->
-     <!-- JAM yang dipake adalah UTC +0 , -7 dari jam indonesia -->
-    @if (date('H') >= 0 && date('H') < 4)
-    
-    <?php 
-    // echo (date('H'));
-    ?> 
-        <li class="nav-item">
-            <div class="badge badge-danger">Harap mengisi presensi</div>
-            <div class="badge badge-danger">sebelum  jam 10.00 !</div>
-        </li>
-   
-    @endif 
-    <!-- NOTIFIKASI PENINGAT PRESENSI -- END -->
 </nav>

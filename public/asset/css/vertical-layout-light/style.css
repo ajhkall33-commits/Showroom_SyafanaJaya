@@ -19195,7 +19195,7 @@ code {
 
 /* Footer */
 .footer {
-  background: #f4f5fa;
+  background: transparent;
   padding: 0 1.812rem 2.062rem 1.812rem;
   transition: all 0.25s ease;
   -moz-transition: all 0.25s ease;
@@ -19532,7 +19532,7 @@ code {
   padding-top: 24px;
   padding-bottom: 24px;
   z-index: 2;
-  background: #f4f5fa;
+  background: transparent;
   z-index: 999;
 }
 
@@ -24079,7 +24079,7 @@ div.tagsinput span.tag a {
   padding-left: 0;
   padding-right: 0;
   padding-top: 1.875rem;
-  background: #f4f5fa;
+  background: transparent;
 }
 
 .page-body-wrapper.full-page-wrapper {

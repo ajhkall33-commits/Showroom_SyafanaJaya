@@ -2,9 +2,13 @@
   'use strict';
   $(function() {
     // Remove pro banner on close
-    document.querySelector('#bannerClose').addEventListener('click',function() {
-      document.querySelector('#proBanner').classList.add('d-none');
-    });
+    var bannerClose = document.querySelector('#bannerClose');
+    if (bannerClose) {
+      bannerClose.addEventListener('click',function() {
+        var proBanner = document.querySelector('#proBanner');
+        if (proBanner) proBanner.classList.add('d-none');
+      });
+    }
     if ($("#transactions-chart").length) {
       var transactionsChartCanvas = $("#transactions-chart").get(0).getContext("2d");
 

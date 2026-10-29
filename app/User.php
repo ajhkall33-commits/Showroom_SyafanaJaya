@@ -39,11 +39,11 @@ class User extends Authenticatable
 
     public function karyawan()
     {
-        return $this->belongsTo('App\Karyawan', 'id', 'user_id_user');
+        return $this->belongsTo(\App\Modules\Karyawan\Models\karyawan::class, 'id', 'user_id_user');
     }
 
     public function admin()
     {
-        return $this->belongsTo('App\admin', 'id', 'user_id_user');
+        return $this->belongsTo(\App\Modules\Admin\Models\admin::class, 'id', 'user_id_user');
     }
 }

@@ -5,7 +5,8 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Syafana Jaya Motor</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>ASCEND</title>
   <!-- base:css -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,86 +15,423 @@
   <link rel="stylesheet" href="{{ asset('asset/vendors/css/vendor.bundle.base.css') }}">
   <!-- inject:css -->
   <link rel="stylesheet" href="{{ asset('asset/css/vertical-layout-light/style.css') }}">
-  <link rel="shortcut icon" href="{{ asset('asset/images/favicon.png') }}" />
+  <link rel="stylesheet" href="{{ asset('asset/plugins/select2/css/select2.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('asset/plugins/select2/css/select2-bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('asset/plugins/bootstrap-datatable/css/dataTables.bootstrap4.min.css') }}">
+  <link rel="shortcut icon" href="{{ asset('asset/images/favicon.png') }}?v=2" />
+  <link rel="icon" type="image/png" href="{{ asset('asset/images/favicon.png') }}?v=2" />
+  
+  <!-- jQuery loaded in head so all modules and inline scripts have immediate access to $ and jQuery -->
+  <script src="{{ asset('asset/js/jquery.min.js') }}"></script>
   
   <style>
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-      background-color: #f4f6fb !important;
-      -webkit-font-smoothing: antialiased;
+    :root {
+      --primary-color: #0284c7;
+      --primary-light: #38bdf8;
+      --primary-lighter: #bae6fd;
+      --primary-soft: #f0f9ff;
+      --primary-soft-bg: #e0f2fe;
+      --primary-dark: #0369a1;
+      --slate-dark: #0f172a;
+      --slate-text: #334155;
+      --slate-muted: #64748b;
+      --border-soft: #e2e8f0;
+      --border-sky: #bae6fd;
+      --card-shadow: 0 4px 20px rgba(14, 165, 233, 0.06);
     }
+
+    html, body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      background: radial-gradient(circle at 50% 28%, #102a4e 0%, #0a1931 55%, #050d1a 100%) fixed !important;
+      color: #334155 !important;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    .container-scroller,
+    .page-body-wrapper,
+    .main-panel,
+    .content-wrapper {
+      background: transparent !important;
+    }
+
+    /* Headings on Dark Blue Dashboard */
+    h3.text-dark,
+    h4.text-dark,
+    .content-wrapper h3.text-dark,
+    .main-panel h3.text-dark,
+    .content-wrapper h4.text-dark,
+    .main-panel h4.text-dark,
+    .content-wrapper > .row h3,
+    .main-panel > .row h3 {
+      color: #ffffff !important;
+    }
+
+    .content-wrapper p.text-muted:not(.card *),
+    .main-panel p.text-muted:not(.card *) {
+      color: #94a3b8 !important;
+    }
+
+    /* Top Navbar Matching Login */
+    .navbar {
+      background: radial-gradient(circle at 20% 50%, #102a4e 0%, #0a1931 60%, #070d1e 100%) !important;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+    .navbar .navbar-brand-wrapper {
+      background: transparent !important;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+      border-right: 1px solid rgba(56, 189, 248, 0.15) !important;
+      box-shadow: none !important;
+    }
+    .navbar .navbar-menu-wrapper {
+      background: transparent !important;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+      box-shadow: none !important;
+    }
+
+    /* Cards Menimbul (Elevated 3D floating effect) */
+    .card, .stat-card, .chart-card {
+      background: linear-gradient(145deg, #e8eaed 0%, #d4d7dc 50%, #c8cbd2 100%) !important;
+      border-radius: 16px !important;
+      border: 1px solid rgba(180, 185, 195, 0.5) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 25px rgba(2, 132, 199, 0.12), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+    }
+
+    /* Completely hide settings floating gear & template panels */
+    .theme-setting-wrapper,
+    #settings-trigger,
+    #theme-settings,
+    #right-sidebar {
+      display: none !important;
+    }
+
+    /* Sidebar Styling - Modern Dark Theme matching Login */
+    .sidebar {
+      background: radial-gradient(circle at 50% 20%, #0c203c 0%, #081528 70%, #050e1c 100%) !important;
+      border-right: 1px solid rgba(56, 189, 248, 0.18) !important;
+      box-shadow: 4px 0 25px rgba(0, 0, 0, 0.4) !important;
+    }
+    .sidebar .nav .nav-item .nav-link {
+      color: #94a3b8 !important;
+      border-radius: 10px;
+      margin: 3px 12px;
+      padding: 0.72rem 0.95rem !important;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      font-size: 0.88rem;
+    }
+    .sidebar .nav .nav-item .nav-link i.menu-icon {
+      color: #38bdf8 !important;
+      font-size: 1.15rem;
+      transition: color 0.2s ease;
+    }
+    .sidebar .nav .nav-item .nav-link .menu-title {
+      color: #cbd5e1 !important;
+    }
+    .sidebar .nav .nav-item .nav-link:hover {
+      background: rgba(2, 132, 199, 0.18) !important;
+      color: #38bdf8 !important;
+    }
+    .sidebar .nav .nav-item .nav-link:hover .menu-title,
+    .sidebar .nav .nav-item .nav-link:hover i.menu-icon {
+      color: #38bdf8 !important;
+    }
+    .sidebar .nav .nav-item.active > .nav-link {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.4) 0%, rgba(56, 189, 248, 0.22) 100%) !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.25) !important;
+      border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    }
+    .sidebar .nav .nav-item.active > .nav-link i.menu-icon,
+    .sidebar .nav .nav-item.active > .nav-link .menu-title {
+      color: #ffffff !important;
+      font-weight: 700 !important;
+    }
+    .sidebar .nav .sub-menu {
+      background: rgba(5, 13, 26, 0.8) !important;
+      border-radius: 12px;
+      margin: 4px 12px;
+      padding: 0.5rem 0.75rem !important;
+      border: 1px solid rgba(56, 189, 248, 0.12) !important;
+    }
+    .sidebar .nav .sub-menu .nav-item .nav-link {
+      color: #94a3b8 !important;
+      font-size: 0.84rem;
+    }
+    .sidebar .nav .sub-menu .nav-item .nav-link:hover,
+    .sidebar .nav .sub-menu .nav-item.active .nav-link {
+      color: #38bdf8 !important;
+      background: rgba(2, 132, 199, 0.15) !important;
+    }
+
+    /* Modern Rotating Dropdown Chevron (replaces clumsy + / -) */
+    .sidebar .nav .nav-item .nav-link i.menu-arrow {
+      margin-left: auto;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar .nav .nav-item .nav-link i.menu-arrow:before {
+      content: "\e047" !important; /* Typicons chevron right */
+      font-family: "typicons" !important;
+      font-size: 0.8rem !important;
+      color: #94a3b8 !important;
+      display: inline-block;
+    }
+    .sidebar .nav .nav-item .nav-link[aria-expanded="true"] i.menu-arrow {
+      transform: rotate(90deg);
+    }
+    .sidebar .nav .nav-item .nav-link[aria-expanded="true"] i.menu-arrow:before {
+      color: #0284c7 !important;
+    }
+
+    /* Submenus - Clean Hierarchical Tree without clumsy bullets */
+    .sidebar .nav.sub-menu {
+      padding: 0.35rem 0 0.5rem 0.75rem !important;
+      margin-left: 1.5rem !important;
+      border-left: 2px solid #e0f2fe !important;
+      margin-top: 0.2rem;
+      margin-bottom: 0.35rem;
+    }
+    .sidebar .nav.sub-menu .nav-item::before {
+      display: none !important;
+    }
+    .sidebar .nav.sub-menu .nav-item .nav-link {
+      color: #64748b !important;
+      border-radius: 8px;
+      font-size: 0.84rem !important;
+      padding: 0.45rem 0.75rem !important;
+      margin: 1px 0 !important;
+      font-weight: 500;
+    }
+    .sidebar .nav.sub-menu .nav-item .nav-link:hover {
+      color: #0284c7 !important;
+      background: #f0f9ff !important;
+    }
+    .sidebar .nav.sub-menu .nav-item .nav-link.active,
+    .sidebar .nav.sub-menu .nav-item.active > .nav-link {
+      color: #0284c7 !important;
+      font-weight: 700 !important;
+      background: #e0f2fe !important;
+    }
+
+    /* Nested Submenu (Penilaian Kerja) */
+    .sidebar .nav.sub-menu .nav-item .collapse .sub-menu {
+      padding-left: 0.75rem !important;
+      border-left: 2px solid #bae6fd !important;
+      margin-left: 0.75rem !important;
+      margin-top: 0.25rem;
+      margin-bottom: 0.4rem;
+    }
+    .sidebar .nav.sub-menu .nav-item .collapse .sub-menu .nav-item::before {
+      display: none !important;
+    }
+    .sidebar .nav.sub-menu .nav-item .collapse .sub-menu .nav-item .nav-link {
+      padding: 0.4rem 0.65rem !important;
+      font-size: 0.8rem !important;
+      color: #64748b !important;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .sidebar .nav.sub-menu .nav-item .collapse .sub-menu .nav-item .nav-link:hover,
+    .sidebar .nav.sub-menu .nav-item .collapse .sub-menu .nav-item.active > .nav-link {
+      color: #0284c7 !important;
+      background-color: #e0f2fe !important;
+      font-weight: 700 !important;
+    }
+
+    /* Cards - Aesthetic Clean & Airy */
     .card {
-      border-radius: 14px !important;
-      border: none !important;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+      border-radius: 16px !important;
+      border: 1px solid #e0f2fe !important;
+      box-shadow: 0 4px 20px rgba(14, 165, 233, 0.05) !important;
       background: #ffffff !important;
       margin-bottom: 1.5rem;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 6px 24px rgba(14, 165, 233, 0.08) !important;
     }
     .card-body {
-      padding: 1.25rem !important;
+      padding: 1.35rem !important;
     }
+    .card-title, h3, h4, h5 {
+      color: #0f172a !important;
+      font-weight: 700;
+    }
+
+    /* Buttons - Aesthetic Light Blue */
+    .btn {
+      border-radius: 10px !important;
+      font-weight: 600 !important;
+      font-size: 0.85rem !important;
+      padding: 0.55rem 1.15rem !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+      border: none !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 12px rgba(14, 165, 233, 0.3) !important;
+    }
+    .btn-primary:hover, .btn-primary:focus {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      box-shadow: 0 6px 16px rgba(14, 165, 233, 0.42) !important;
+      transform: translateY(-1px);
+    }
+    .btn-outline-primary {
+      border: 1.5px solid #38bdf8 !important;
+      color: #0284c7 !important;
+      background: transparent !important;
+    }
+    .btn-outline-primary:hover {
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+    }
+    .btn-info {
+      background: linear-gradient(135deg, #7dd3fc 0%, #0284c7 100%) !important;
+      border: none !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 10px rgba(56, 189, 248, 0.25) !important;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+      border: none !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25) !important;
+    }
+    .btn-warning {
+      background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+      border: none !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 10px rgba(245, 158, 11, 0.25) !important;
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #f87171 0%, #dc2626 100%) !important;
+      border: none !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 10px rgba(239, 68, 68, 0.25) !important;
+    }
+
+    /* Forms, Inputs, Selects */
+    .form-control, .custom-select, select {
+      border-radius: 10px !important;
+      font-size: 0.88rem !important;
+      border: 1.5px solid #bae6fd !important;
+      padding: 0.55rem 0.85rem !important;
+      height: auto !important;
+      background-color: #ffffff !important;
+      transition: all 0.2s ease !important;
+    }
+    .form-control:focus, select:focus, .custom-select:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3.5px rgba(56, 189, 248, 0.25) !important;
+      outline: none !important;
+    }
+
+    /* Tables - Clean, Fresh Sky Theme */
     .table-responsive {
-      border-radius: 10px;
+      border-radius: 12px;
       overflow-x: auto !important;
       -webkit-overflow-scrolling: touch !important;
       width: 100% !important;
       margin-bottom: 1rem;
-      display: block;
+      border: 1px solid #e0f2fe;
     }
     .table-responsive::-webkit-scrollbar {
       height: 6px;
     }
     .table-responsive::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 4px;
+      background: #f0f9ff;
     }
     .table-responsive::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
+      background: #bae6fd;
       border-radius: 4px;
-    }
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
     }
     .table {
       width: 100% !important;
       margin-bottom: 0 !important;
     }
-    .table-hover tbody tr:hover {
-      background-color: rgba(99, 102, 241, 0.04) !important;
-      transition: background-color 0.15s ease;
-    }
     .table thead th {
-      background-color: #f8fafc;
-      color: #475569;
-      font-weight: 700;
-      font-size: 0.84rem;
-      border-bottom: 2px solid #e2e8f0;
+      background-color: #f0f9ff !important;
+      color: #0369a1 !important;
+      font-weight: 700 !important;
+      font-size: 0.8rem !important;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #bae6fd !important;
+      border-top: none !important;
+      padding: 0.85rem 1rem !important;
       white-space: nowrap;
     }
     .table tbody td {
-      vertical-align: middle;
-      font-size: 0.88rem;
-    }
-    .card-description {
-      display: none !important;
-    }
-    .btn {
-      border-radius: 8px !important;
-      font-weight: 600 !important;
-      font-size: 0.85rem !important;
-      padding: 0.5rem 1rem !important;
-    }
-    .form-control, .custom-select, select {
-      border-radius: 8px !important;
+      vertical-align: middle !important;
       font-size: 0.88rem !important;
-      border: 1px solid #e2e8f0 !important;
-      padding: 0.55rem 0.85rem !important;
-      height: auto !important;
+      padding: 0.85rem 1rem !important;
+      border-top: 1px solid #f1f5f9 !important;
+      color: #334155;
     }
-    .form-control:focus, select:focus {
-      border-color: #6366f1 !important;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    .table-hover tbody tr:hover {
+      background-color: rgba(56, 189, 248, 0.05) !important;
     }
+
+    /* Badges */
+    .badge {
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.4rem 0.75rem;
+    }
+    .badge-primary {
+      background: #e0f2fe !important;
+      color: #0369a1 !important;
+      border: 1px solid #bae6fd !important;
+    }
+    .badge-success {
+      background: #dcfce7 !important;
+      color: #15803d !important;
+      border: 1px solid #bbf7d0 !important;
+    }
+    .badge-warning {
+      background: #fef9c3 !important;
+      color: #a16207 !important;
+      border: 1px solid #fef08a !important;
+    }
+    .badge-danger {
+      background: #fee2e2 !important;
+      color: #b91c1c !important;
+      border: 1px solid #fecaca !important;
+    }
+
+    /* Modals - Aesthetic Light Blue */
+    .modal-content {
+      border-radius: 18px !important;
+      border: 1px solid #bae6fd !important;
+      box-shadow: 0 20px 40px rgba(14, 165, 233, 0.15) !important;
+      overflow: hidden;
+    }
+    .modal-header {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+      border-bottom: 1px solid #bae6fd !important;
+      padding: 1.15rem 1.5rem !important;
+    }
+    .modal-header .modal-title {
+      color: #0369a1 !important;
+      font-weight: 700 !important;
+    }
+    .modal-footer {
+      border-top: 1px solid #f0f9ff !important;
+      padding: 1rem 1.5rem !important;
+    }
+
+    /* Primary Accent Utilities */
+    .text-primary {
+      color: #0284c7 !important;
+    }
+    .bg-primary {
+      background-color: #0ea5e9 !important;
+    }
+
     /* Mobile responsive optimizations */
     @media (max-width: 991.98px) {
       .navbar {
@@ -130,175 +468,6 @@
     @include('layouts.header')
 
     <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_settings-panel.html -->
-      <div class="theme-setting-wrapper">
-        <div id="settings-trigger"><i class="typcn typcn-cog-outline"></i></div>
-        <div id="theme-settings" class="settings-panel">
-          <i class="settings-close typcn typcn-times"></i>
-          <p class="settings-heading">SIDEBAR SKINS</p>
-          <div class="sidebar-bg-options selected" id="sidebar-light-theme"><div class="img-ss rounded-circle bg-light border mr-3"></div>Light</div>
-          <div class="sidebar-bg-options" id="sidebar-dark-theme"><div class="img-ss rounded-circle bg-dark border mr-3"></div>Dark</div>
-          <p class="settings-heading mt-2">HEADER SKINS</p>
-          <div class="color-tiles mx-0 px-4">
-            <div class="tiles success"></div>
-            <div class="tiles warning"></div>
-            <div class="tiles danger"></div>
-            <div class="tiles info"></div>
-            <div class="tiles dark"></div>
-            <div class="tiles default"></div>
-          </div>
-        </div>
-      </div>
-      <div id="right-sidebar" class="settings-panel">
-        <i class="settings-close typcn typcn-times"></i>
-        <ul class="nav nav-tabs" id="setting-panel" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="todo-tab" data-toggle="tab" href="#todo-section" role="tab" aria-controls="todo-section" aria-expanded="true">TO DO LIST</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="chats-tab" data-toggle="tab" href="#chats-section" role="tab" aria-controls="chats-section">CHATS</a>
-          </li>
-        </ul>
-        <div class="tab-content" id="setting-content">
-          <div class="tab-pane fade show active scroll-wrapper" id="todo-section" role="tabpanel" aria-labelledby="todo-section">
-            <div class="add-items d-flex px-3 mb-0">
-              <form class="form w-100">
-                <div class="form-group d-flex">
-                  <input type="text" class="form-control todo-list-input" placeholder="Add To-do">
-                  <button type="submit" class="add btn btn-primary todo-list-add-btn" id="add-task">Add</button>
-                </div>
-              </form>
-            </div>
-            <div class="list-wrapper px-3">
-              <ul class="d-flex flex-column-reverse todo-list">
-                <li>
-                  <div class="form-check">
-                    <label class="form-check-label">
-                      <input class="checkbox" type="checkbox">
-                      Team review meeting at 3.00 PM
-                    </label>
-                  </div>
-                  <i class="remove typcn typcn-delete-outline"></i>
-                </li>
-                <li>
-                  <div class="form-check">
-                    <label class="form-check-label">
-                      <input class="checkbox" type="checkbox">
-                      Prepare for presentation
-                    </label>
-                  </div>
-                  <i class="remove typcn typcn-delete-outline"></i>
-                </li>
-                <li>
-                  <div class="form-check">
-                    <label class="form-check-label">
-                      <input class="checkbox" type="checkbox">
-                      Resolve all the low priority tickets due today
-                    </label>
-                  </div>
-                  <i class="remove typcn typcn-delete-outline"></i>
-                </li>
-                <li class="completed">
-                  <div class="form-check">
-                    <label class="form-check-label">
-                      <input class="checkbox" type="checkbox" checked>
-                      Schedule meeting for next week
-                    </label>
-                  </div>
-                  <i class="remove typcn typcn-delete-outline"></i>
-                </li>
-                <li class="completed">
-                  <div class="form-check">
-                    <label class="form-check-label">
-                      <input class="checkbox" type="checkbox" checked>
-                      Project review
-                    </label>
-                  </div>
-                  <i class="remove typcn typcn-delete-outline"></i>
-                </li>
-              </ul>
-            </div>
-            <div class="events py-4 border-bottom px-3">
-              <div class="wrapper d-flex mb-2">
-                <i class="typcn typcn-media-record-outline text-primary mr-2"></i>
-                <span>Feb 11 2018</span>
-              </div>
-              <p class="mb-0 font-weight-thin text-gray">Creating component page</p>
-              <p class="text-gray mb-0">build a js based app</p>
-            </div>
-            <div class="events pt-4 px-3">
-              <div class="wrapper d-flex mb-2">
-                <i class="typcn typcn-media-record-outline text-primary mr-2"></i>
-                <span>Feb 7 2018</span>
-              </div>
-              <p class="mb-0 font-weight-thin text-gray">Meeting with Alisa</p>
-              <p class="text-gray mb-0 ">Call Sarah Graves</p>
-            </div>
-          </div>
-          <!-- To do section tab ends -->
-          <div class="tab-pane fade" id="chats-section" role="tabpanel" aria-labelledby="chats-section">
-            <div class="d-flex align-items-center justify-content-between border-bottom">
-              <p class="settings-heading border-top-0 mb-3 pl-3 pt-0 border-bottom-0 pb-0">Friends</p>
-              <small class="settings-heading border-top-0 mb-3 pt-0 border-bottom-0 pb-0 pr-3 font-weight-normal">See All</small>
-            </div>
-            <ul class="chat-list">
-              <li class="list active">
-                <div class="profile"><img src="images/faces/face1.jpg" alt="image"><span class="online"></span></div>
-                <div class="info">
-                  <p>Thomas Douglas</p>
-                  <p>Available</p>
-                </div>
-                <small class="text-muted my-auto">19 min</small>
-              </li>
-              <li class="list">
-                <div class="profile"><img src="images/faces/face2.jpg" alt="image"><span class="offline"></span></div>
-                <div class="info">
-                  <div class="wrapper d-flex">
-                    <p>Catherine</p>
-                  </div>
-                  <p>Away</p>
-                </div>
-                <div class="badge badge-success badge-pill my-auto mx-2">4</div>
-                <small class="text-muted my-auto">23 min</small>
-              </li>
-              <li class="list">
-                <div class="profile"><img src="images/faces/face3.jpg" alt="image"><span class="online"></span></div>
-                <div class="info">
-                  <p>Daniel Russell</p>
-                  <p>Available</p>
-                </div>
-                <small class="text-muted my-auto">14 min</small>
-              </li>
-              <li class="list">
-                <div class="profile"><img src="images/faces/face4.jpg" alt="image"><span class="offline"></span></div>
-                <div class="info">
-                  <p>James Richardson</p>
-                  <p>Away</p>
-                </div>
-                <small class="text-muted my-auto">2 min</small>
-              </li>
-              <li class="list">
-                <div class="profile"><img src="images/faces/face5.jpg" alt="image"><span class="online"></span></div>
-                <div class="info">
-                  <p>Madeline Kennedy</p>
-                  <p>Available</p>
-                </div>
-                <small class="text-muted my-auto">5 min</small>
-              </li>
-              <li class="list">
-                <div class="profile"><img src="images/faces/face6.jpg" alt="image"><span class="online"></span></div>
-                <div class="info">
-                  <p>Sarah Graves</p>
-                  <p>Available</p>
-                </div>
-                <small class="text-muted my-auto">47 min</small>
-              </li>
-            </ul>
-          </div>
-          <!-- chat tab ends -->
-        </div>
-      </div>
-      <!-- partial -->
       <!-- partial:partials/_sidebar.html -->
       @include('layouts.navbar')
       <!-- partial -->
@@ -735,60 +904,73 @@
   <!-- container-scroller -->
 
   <!-- base:js -->
-  <script src="asset/vendors/js/vendor.bundle.base.js"></script>
+  <script src="{{ asset('asset/vendors/js/vendor.bundle.base.js') }}"></script>
   <!-- endinject -->
   <!-- Plugin js for this page-->
-  <script src="asset/vendors/chart.js/Chart.min.js"></script>
+  <script src="{{ asset('asset/vendors/chart.js/Chart.min.js') }}"></script>
   <!-- End plugin js for this page-->
   <!-- inject:js -->
-  <script src="asset/js/off-canvas.js"></script>
-  <script src="asset/js/hoverable-collapse.js"></script>
-  <script src="asset/js/template.js"></script>
-  <script src="asset/js/settings.js"></script>
-  <script src="asset/js/todolist.js"></script>
+  <script src="{{ asset('asset/js/off-canvas.js') }}"></script>
+  <script src="{{ asset('asset/js/hoverable-collapse.js') }}"></script>
+  <script src="{{ asset('asset/js/template.js') }}"></script>
+  <script src="{{ asset('asset/js/settings.js') }}"></script>
+  <script src="{{ asset('asset/js/todolist.js') }}"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
-  <script src="asset/js/dashboard.js"></script>
+  <script src="{{ asset('asset/js/dashboard.js') }}"></script>
   <!-- End custom js for this page-->
 
-  {{-- dataTables --}}
+  <!-- DataTables & Select2 Plugins -->
+  <script src="{{ asset('asset/plugins/select2/js/select2.min.js') }}"></script>
+  <script src="{{ asset('asset/plugins/bootstrap-datatable/js/jquery.dataTables.min.js') }}"></script>
+  <script src="{{ asset('asset/plugins/bootstrap-datatable/js/dataTables.bootstrap4.min.js') }}"></script>
 
-  {{-- <script src="asset/plugins/bootstrap-datatable/js/jquery.dataTables.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/dataTables.bootstrap4.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/dataTables.buttons.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/buttons.bootstrap4.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/jszip.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/pdfmake.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/vfs_fonts.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/buttons.html5.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/buttons.print.min.js"></script>
-  <script src="asset/plugins/bootstrap-datatable/js/buttons.colVis.min.js"></script> --}}
-  <script src="asset/js/jquery.min.js"></script>
-  <script src="asset/js/popper.min.js"></script>
-  <script src="asset/js/bootstrap.min.js"></script>
-  <script src="asset/plugins/simplebar/js/simplebar.js"></script>
-  <script src="asset/js/sidebar-menu.js"></script>
-  <script src="asset/js/app-script.js"></script>
-  <script src="asset/js/index.js"></script>
-  <script src="asset/plugins/notifications/js/lobibox.min.js"></script>
-  <script src="asset/plugins/notifications/js/notifications.min.js"></script>
-  <script src="asset/plugins/notifications/js/notification-custom-script.js"></script>
+  <script src="{{ asset('asset/js/popper.min.js') }}"></script>
+  <script src="{{ asset('asset/js/bootstrap.min.js') }}"></script>
+  <script src="{{ asset('asset/plugins/simplebar/js/simplebar.js') }}"></script>
+  <script src="{{ asset('asset/js/sidebar-menu.js') }}"></script>
+  <script src="{{ asset('asset/js/app-script.js') }}"></script>
+  <script src="{{ asset('asset/js/index.js') }}"></script>
+  <script src="{{ asset('asset/plugins/notifications/js/lobibox.min.js') }}"></script>
+  <script src="{{ asset('asset/plugins/notifications/js/notifications.min.js') }}"></script>
+  <script src="{{ asset('asset/plugins/notifications/js/notification-custom-script.js') }}"></script>
+  <script src="{{ asset('asset/plugins/alerts-boxes/js/sweetalert.min.js') }}"></script>
 
-  {{-- <script src="asset/plugins/alerts-boxes/js/sweetalert.min.js"></script> --}}
-  {{-- <script src="asset/js/jquery.min.js"></script>
-  <script src="asset/js/popper.min.js"></script>
-  <script src="asset/js/bootstrap.min.js"></script>
-  <script src="asset/plugins/simplebar/js/simplebar.js"></script>
-  <script src="asset/js/sidebar-menu.js"></script>
-  <script src="asset/js/app-script.js"></script>
-  <script src="asset/js/index.js"></script>
-  <script src="asset/plugins/notifications/js/lobibox.min.js"></script>
-  <script src="asset/plugins/notifications/js/notifications.min.js"></script>
-  <script src="asset/plugins/notifications/js/notification-custom-script.js"></script>
-  <script src="asset/plugins/alerts-boxes/js/sweetalert.min.js"></script> --}}
-<script src="{{asset('asset/plugins/alerts-boxes/js/sweetalert.min.js')}}"></script>
+<script>
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
 
+$(document).ready(function() {
+    // Nested collapse handler for Penilaian Kerja sidebar
+    $('#penilaian-kerja').on('click', '[data-toggle="collapse"]', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var targetId = $(this).attr('href') || $(this).data('target');
+        var $target = $(targetId);
+        if ($target.length) {
+            $target.collapse('toggle');
+            var isExpanded = $(this).attr('aria-expanded') === 'true';
+            $(this).attr('aria-expanded', !isExpanded);
+        }
+    });
 
+    $('#penilaian-kerja').on('show.bs.collapse', '.collapse', function(e) {
+        e.stopPropagation();
+        var $this = $(this);
+        // Pastikan menu induk #penilaian-kerja selalu tetap terbuka
+        $('#penilaian-kerja').addClass('show');
+        // Tutup sub-menu lain yang setara di dalam #penilaian-kerja jika dibuka
+        $('#penilaian-kerja').find('.collapse.show').not($this).collapse('hide');
+    });
+
+    $('#penilaian-kerja').on('hide.bs.collapse', '.collapse', function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
 
 @yield('script')
 

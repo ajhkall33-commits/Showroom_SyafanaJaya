@@ -1,0 +1,621 @@
+public function LoadDataAnl($id = null)
+{
+    $perangkat = $this->Mod->getWhere('perangkat', array('id_perangkat' => $id))->row_array();
+    $todayDate = date('Y-m-d');
+  
+    // Mengambil data logbook yang terkait dengan fasilitas
+    $logHistory = $this->Mod->GetCustome(" 
+     SELECT a.*, b.nama_masalah as nama_masalah_tinjut, c.nama_perangkat, jp.nama as nama_jenis_perangkat, f.nama_fasilitas
+        FROM tinjut a 
+        LEFT JOIN tinjut_detail td ON td.id_tinjut = a.id_tinjut 
+        LEFT JOIN perangkat c ON c.id_perangkat = td.id_perangkat 
+        LEFT JOIN jenis_masalah b ON b.id = td.id_jenismasalah
+        LEFT JOIN fasilitas f ON f.id_fasilitas = a.id_fasilitas
+        LEFT JOIN jenis_perangkat jp ON jp.id_jenisperangkat = td.id_jenisperangkat
+       WHERE a.id_fasilitas = '" . $id . "' 
+    ")->result_array();
+
+    $result['LogHistory'] = $logHistory;
+
+    // AMBIL ID UNIT DARI SESSION
+    $id_unit = !empty(sess()['unit']) ? sess()['unit'] : null;
+    
+    // AMBIL DATA FASILITAS UNTUK MENDAPATKAN KODE FASILITAS
+    $fasilitas_data = $this->Mod->getWhere('fasilitas', array('id_fasilitas' => $id))->row_array();
+    $kode_fasilitas = !empty($fasilitas_data['kode']) ? $fasilitas_data['kode'] : null;
+
+    if (in_array($id_unit, [14, 15, 16, 17])) {
+          // Mengambil total menit dalam bulan berjalan
+    $total_minutes_in_month = date('t') * 24 * 60;
+    
+    // Mengambil data downtime dan uptime untuk performa
+    $downtime = $this->Mod->GetCustome("SELECT SUM(TIMESTAMPDIFF(MINUTE, date_start, update_date)) AS total_downTime 
+                                          FROM tinjut 
+                                          WHERE update_date >= NOW() - INTERVAL 1 MONTH 
+                                          AND date_start >= NOW() - INTERVAL 1 MONTH")->row_array();
+    $uptime = $total_minutes_in_month;
+
+    $totaldowntime = $downtime['total_downTime'];
+    // Cek apakah $uptime adalah array dan key 'uptime' exists
+    $totaluptime = (is_array($uptime) && isset($uptime['uptime'])) ? $uptime['uptime'] : 0;
+
+    $performa = ( $totaluptime  - $totaldowntime) / $total_minutes_in_month * 100;
+
+
+    }
+    elseif (in_array($id_unit, [18, 17, 19, 20, 21, 22, 23]))
+    {
+        
+        // Hitung total menit dalam tahun berjalan dengan DateTime
+        $current_year = date('Y');
+        $start_of_year = new DateTime("$current_year-01-01");
+        $end_of_year = new DateTime("$current_year-12-31");
+        $total_days_in_year = $end_of_year->diff($start_of_year)->days + 1;
+        $total_minutes_in_year = $total_days_in_year * 24 * 60;
+
+         // Hitung total downtime dalam menit untuk tahun berjalan
+        $downtime_query = $this->Mod->GetCustome("
+            SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+            FROM tinjut t
+            LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+            WHERE td.id_perangkat = '" . $id . "'
+            AND YEAR(t.start_time) = YEAR(NOW())
+        ")->row_array();
+        
+        $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+        
+        // RUMUS PERFORMANCE SCORE YANG ANDA MINTA
+        if ($total_minutes_in_year > 0) {
+            $downtime_percentage = ($downtime / $total_minutes_in_year) * 100;
+            $performa = 100 - $downtime_percentage;
+            $performa = round($performa, 2);
+        } 
+    }
+    else
+    {
+        // LOGIKA BERDASARKAN KODE FASILITAS UNTUK UNIT LAINNYA
+        if ($kode_fasilitas == 1) {
+            // FASILITAS KODE 1 - RUMUS TAHUNAN
+            $current_year = date('Y');
+            $start_of_year = new DateTime("$current_year-01-01");
+            $end_of_year = new DateTime("$current_year-12-31");
+            $total_days_in_year = $end_of_year->diff($start_of_year)->days + 1;
+            $total_minutes_in_year = $total_days_in_year * 24 * 60;
+            
+            // Hitung total downtime dalam menit untuk tahun berjalan
+            $downtime_query = $this->Mod->GetCustome("
+                SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                FROM tinjut t
+                LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                WHERE t.id_fasilitas = '" . $id . "'
+                AND YEAR(t.start_time) = YEAR(NOW())
+            ")->row_array();
+            
+            $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+            
+            if ($total_minutes_in_year > 0) {
+                $downtime_percentage = ($downtime / $total_minutes_in_year) * 100;
+                $performa = 100 - $downtime_percentage;
+                $performa = round($performa, 2);
+            } else {
+                $performa = 100;
+            }
+            
+        } elseif ($kode_fasilitas == 2) {
+            // FASILITAS KODE 2 - RUMUS BULANAN
+            $total_minutes_in_month = date('t') * 24 * 60;
+            
+            // Cek status dari tinjut dan tinjut_detail
+            $status_query = $this->Mod->GetCustome("
+                SELECT t.status AS tinjut_status, td.status AS tinjut_detail_status
+                FROM tinjut t
+                LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                WHERE t.id_fasilitas = '" . $id . "'
+                AND MONTH(t.start_time) = MONTH(NOW()) 
+                AND YEAR(t.start_time) = YEAR(NOW())
+            ")->row_array();
+            
+            $tinjut_status = !empty($status_query['tinjut_status']) ? $status_query['tinjut_status'] : null;
+            $tinjut_detail_status = !empty($status_query['tinjut_detail_status']) ? $status_query['tinjut_detail_status'] : null;
+
+            // Jika status di kedua tabel adalah 2, atau kosong, set performa 100%
+            if (($tinjut_status == 2 || empty($tinjut_status)) && ($tinjut_detail_status == 2 || empty($tinjut_detail_status))) {
+                $performa = 100;
+            } else {
+                // Hitung downtime bulan berjalan
+                $downtime_query = $this->Mod->GetCustome("
+                    SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                    FROM tinjut t
+                    LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                    WHERE t.id_fasilitas = '" . $id . "'
+                    AND MONTH(t.start_time) = MONTH(NOW()) 
+                    AND YEAR(t.start_time) = YEAR(NOW())
+                ")->row_array();
+                
+                $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+                
+                if ($total_minutes_in_month > 0) {
+                    $performa = (($total_minutes_in_month - $downtime) / $total_minutes_in_month) * 100;
+                    $performa = round($performa, 2);
+                } else {
+                    $performa = 100;
+                }
+            }
+        } else {
+            // DEFAULT JIKA TIDAK ADA KODE FASILITAS YANG COCOK
+            $performa = 100;
+        }
+    }
+
+    // Pastikan performa tidak kosong
+    if (empty($performa)) {
+        $performa = 100;
+    }
+  
+    $performa_formatted = number_format(round($performa));
+    $result['perfomChart'] = array('Performa' => round($performa));
+    $result['perfomChart'] = array('Performa' => $performa_formatted);
+
+    // Ambil perangkat yang ada dalam fasilitas, kecuali perangkat 'listrik', dan menghitung performa perangkat
+    $tabel = $this->Mod->GetCustome("
+          SELECT
+            p.id_perangkat, 
+            p.nama_perangkat, 
+            p.status as status_perangkat, 
+            u.kode_unit, 
+            f.ip_address, 
+            p.serial_number, 
+            f.status, 
+            t.create_date, 
+            fd.id_jenisperangkat, 
+            m.nama AS merk_nama, 
+            jp.nama AS nama_jp,
+            t.status as status_tinjut
+            FROM perangkat p 
+            LEFT JOIN fasilitas_detail fd ON fd.id_perangkat = p.id_perangkat 
+            LEFT JOIN unit u ON p.id_unit = u.id_unit 
+            LEFT JOIN fasilitas f ON fd.id_fasilitas = f.id_fasilitas 
+            LEFT JOIN (
+
+            SELECT td.id_perangkat, MAX(t.create_date) AS max_create_date 
+            FROM tinjut_detail td
+            LEFT JOIN tinjut t ON t.id_tinjut = td.id_tinjut
+            GROUP BY td.id_perangkat
+
+            ) 
+            latest_tinjut ON latest_tinjut.id_perangkat = p.id_perangkat 
+            LEFT JOIN tinjut_detail td ON td.id_perangkat = p.id_perangkat
+            LEFT JOIN tinjut t ON t.id_tinjut = td.id_tinjut AND t.create_date = latest_tinjut.max_create_date
+            LEFT JOIN merk m ON m.id = p.merk_id 
+            LEFT JOIN jenis_perangkat jp ON jp.id_jenisperangkat = p.id_jenisperangkat 
+            WHERE
+                fd.id_fasilitas = $id
+                AND LOWER(p.nama_perangkat) != 'listrik'  -- Memfilter perangkat yang tidak bernama 'listrik'
+          
+            GROUP BY
+                p.id_perangkat
+            ORDER BY
+                t.create_date DESC
+    ")->result_array();
+
+    // Mengambil performa perangkat berdasarkan rumus yang diberikan
+    $totaldata_log = 0;
+    $total_perfom = 0;  // Untuk menyimpan jumlah performa perangkat
+    $valid_devices = 0; // Untuk menghitung jumlah perangkat yang valid
+
+    // Menyimpan performa perangkat untuk debugging
+    $device_performance = []; // Array untuk menyimpan performa setiap perangkat
+
+    foreach ($tabel as $key => $value) {
+        // Ambil status dari tinjut dan tinjut_detail untuk perangkat ini
+        $status_query = $this->Mod->GetCustome("
+            SELECT t.status AS tinjut_status, td.status AS tinjut_detail_status
+            FROM tinjut t
+            LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+            WHERE td.id_perangkat = '" . $value['id_perangkat'] . "'
+            AND MONTH(t.start_time) = MONTH(NOW()) 
+            AND YEAR(t.start_time) = YEAR(NOW())
+        ")->row_array();
+
+        $tinjut_status = !empty($status_query['tinjut_status']) ? $status_query['tinjut_status'] : null;
+        $tinjut_detail_status = !empty($status_query['tinjut_detail_status']) ? $status_query['tinjut_detail_status'] : null;
+
+        // ID UNIT KHUSUS (14, 15, 16, 17) - PERHITUNGAN BULANAN
+        if (in_array($id_unit, [14, 15, 16, 17])) {
+            // Jika status di kedua tabel adalah 2, atau kosong, set performa 100%
+            if (($tinjut_status == 2 || empty($tinjut_status)) && ($tinjut_detail_status == 2 || empty($tinjut_detail_status))) {
+                $performaperangkat = 100;
+            } else {
+                // Hitung downtime bulan berjalan untuk perangkat ini
+                $downtime_query = $this->Mod->GetCustome("
+                    SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                    FROM tinjut t
+                    LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                    WHERE td.id_perangkat = '" . $value['id_perangkat'] . "'
+                    AND MONTH(t.start_time) = MONTH(NOW()) 
+                    AND YEAR(t.start_time) = YEAR(NOW())
+                ")->row_array();
+                
+                $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+
+                // Hitung performa perangkat - RUMUS BULANAN
+                if ($total_minutes_in_month > 0) {
+                    $performaperangkat = (($total_minutes_in_month - $downtime) / $total_minutes_in_month) * 100;
+                    $performaperangkat = round($performaperangkat, 2);
+                } else {
+                    $performaperangkat = 100; // Fallback jika pembagian nol
+                }
+            }
+
+        // UNIT LAIN - PERHITUNGAN TAHUNAN (RUMUS YANG ANDA MINTA)
+        }
+         elseif (in_array($id_unit, [18, 17, 19, 20, 21, 22, 23])) 
+        {
+            // Hitung total menit dalam tahun berjalan dengan akurat (termasuk kabisat)
+            $current_year = date('Y');
+            $is_leap_year = date('L', strtotime("$current_year-01-01"));
+            $total_days_in_year = $is_leap_year ? 366 : 365;
+            $total_minutes_in_year = $total_days_in_year * 24 * 60;
+            
+            // Hitung total downtime dalam menit untuk tahun berjalan
+            $downtime_query = $this->Mod->GetCustome("
+                SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                FROM tinjut t
+                LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                WHERE td.id_perangkat = '" . $value['id_perangkat'] . "'
+                AND YEAR(t.start_time) = YEAR(NOW())
+            ")->row_array();
+            
+            $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+            
+            // RUMUS PERFORMANCE SCORE YANG ANDA MINTA
+            // Performance Score = 100 - [(Waktu Rusak (Menit) / Total Waktu (Menit)) × 100]
+            if ($total_minutes_in_year > 0) {
+                $downtime_percentage = ($downtime / $total_minutes_in_year) * 100;
+                $performaperangkat = 100 - $downtime_percentage;
+                $performaperangkat = round($performaperangkat, 2);
+            } else {
+                $performaperangkat = 100; // Fallback jika pembagian nol
+            }
+        }
+        else
+        {
+            // LOGIKA BERDASARKAN KODE FASILITAS UNTUK PERANGKAT DI UNIT LAINNYA
+            if ($kode_fasilitas == 1) {
+                // FASILITAS KODE 1 - RUMUS TAHUNAN UNTUK PERANGKAT
+                $current_year = date('Y');
+                $is_leap_year = date('L', strtotime("$current_year-01-01"));
+                $total_days_in_year = $is_leap_year ? 366 : 365;
+                $total_minutes_in_year = $total_days_in_year * 24 * 60;
+                
+                // Hitung total downtime dalam menit untuk tahun berjalan
+                $downtime_query = $this->Mod->GetCustome("
+                    SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                    FROM tinjut t
+                    LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                    WHERE td.id_perangkat = '" . $value['id_perangkat'] . "'
+                    AND YEAR(t.start_time) = YEAR(NOW())
+                ")->row_array();
+                
+                $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+                
+                if ($total_minutes_in_year > 0) {
+                    $downtime_percentage = ($downtime / $total_minutes_in_year) * 100;
+                    $performaperangkat = 100 - $downtime_percentage;
+                    $performaperangkat = round($performaperangkat, 2);
+                } else {
+                    $performaperangkat = 100;
+                }
+                
+            } elseif ($kode_fasilitas == 2) {
+                // FASILITAS KODE 2 - RUMUS BULANAN UNTUK PERANGKAT
+                $total_minutes_in_month = date('t') * 24 * 60;
+                
+                // Cek status dari tinjut dan tinjut_detail untuk perangkat ini
+                $status_query_perangkat = $this->Mod->GetCustome("
+                    SELECT t.status AS tinjut_status, td.status AS tinjut_detail_status
+                    FROM tinjut t
+                    LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                    WHERE td.id_perangkat = '" . $value['id_perangkat'] . "'
+                    AND MONTH(t.start_time) = MONTH(NOW()) 
+                    AND YEAR(t.start_time) = YEAR(NOW())
+                ")->row_array();
+                
+                $tinjut_status_perangkat = !empty($status_query_perangkat['tinjut_status']) ? $status_query_perangkat['tinjut_status'] : null;
+                $tinjut_detail_status_perangkat = !empty($status_query_perangkat['tinjut_detail_status']) ? $status_query_perangkat['tinjut_detail_status'] : null;
+
+                // Jika status di kedua tabel adalah 2, atau kosong, set performa 100%
+                if (($tinjut_status_perangkat == 2 || empty($tinjut_status_perangkat)) && ($tinjut_detail_status_perangkat == 2 || empty($tinjut_detail_status_perangkat))) {
+                    $performaperangkat = 100;
+                } else {
+                    // Hitung downtime bulan berjalan untuk perangkat ini
+                    $downtime_query = $this->Mod->GetCustome("
+                        SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                        FROM tinjut t
+                        LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                        WHERE td.id_perangkat = '" . $value['id_perangkat'] . "'
+                        AND MONTH(t.start_time) = MONTH(NOW()) 
+                        AND YEAR(t.start_time) = YEAR(NOW())
+                    ")->row_array();
+                    
+                    $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+                    
+                    if ($total_minutes_in_month > 0) {
+                        $performaperangkat = (($total_minutes_in_month - $downtime) / $total_minutes_in_month) * 100;
+                        $performaperangkat = round($performaperangkat, 2);
+                    } else {
+                        $performaperangkat = 100;
+                    }
+                }
+            } else {
+                // DEFAULT JIKA TIDAK ADA KODE FASILITAS YANG COCOK
+                $performaperangkat = 100;
+            }
+        }
+
+        // Jika performa perangkat null, set ke 100%
+        if ($performaperangkat === null) {
+            $performaperangkat = 100;
+        }
+        
+        // Menyimpan nilai performa perangkat untuk debugging
+        $device_performance[] = [
+            'device_name' => $value['nama_perangkat'], 
+            'perform_percentage' => $performaperangkat,
+            'id_unit' => $id_unit,
+            'kode_fasilitas' => $kode_fasilitas,
+            'rumus_digunakan' => in_array($id_unit, [14, 15, 16, 17]) ? 'BULANAN' : 
+                                (in_array($id_unit, [18, 17, 19, 20, 21, 22, 23]) ? 'TAHUNAN' : 
+                                ($kode_fasilitas == 1 ? 'TAHUNAN (KODE 1)' : 
+                                ($kode_fasilitas == 2 ? 'BULANAN (KODE 2)' : 'DEFAULT')))
+        ];
+
+        // Menambahkan performa perangkat untuk menghitung rata-rata performa fasilitas
+        $total_perfom += $performaperangkat;
+        $valid_devices++;
+    }
+
+    // Menghitung rata-rata performa fasilitas berdasarkan perangkat yang valid
+    if ($valid_devices > 0) {
+        $performa_fasilitas = $total_perfom / $valid_devices;  // Rata-rata performa fasilitas
+    } else {
+        $performa_fasilitas = 0;  // Jika tidak ada perangkat yang valid
+    }
+   
+    // Menambahkan debugging result untuk melihat performa perangkat
+    $result['device_performance'] = $device_performance; // Menampilkan performa setiap perangkat
+    $result['fasilitas'] = $fasilitas_data; // Menggunakan data fasilitas yang sudah diambil
+    $result['fasilitas']['status'] = (lb_st($result['fasilitas']['status']));
+    $result['nama_fasilitas'] = $result['fasilitas']['nama_fasilitas'];
+    $result['performa_fasilitas'] = $performa_fasilitas;  // Menyimpan rata-rata performa fasilitas
+    $result['perfomChart'] = ['Performa' => $performa_fasilitas];
+    $result['id_unit_digunakan'] = $id_unit; // Untuk debugging
+    $result['kode_fasilitas'] = $kode_fasilitas; // Untuk debugging
+     
+    echo json_encode($result);
+}
+
+public function GetDiviceProblem()
+{
+    $fasilitas_id = $this->input->post('fasilitas_id');
+
+    // Query perangkat + info fasilitas
+    $this->db->select('p.*, fd.id_fasilitas');
+    $this->db->from('perangkat p');
+    $this->db->join('fasilitas_detail fd', 'fd.id_perangkat = p.id_perangkat', 'left');
+    $this->db->where('fd.id_fasilitas', $fasilitas_id);
+    $this->db->where('LOWER(p.nama_perangkat) !=', 'listrik');
+    $query = $this->db->get();
+
+    // Ambil ID unit dari session
+    $id_unit = !empty(sess()['unit']) ? sess()['unit'] : null;
+
+    $device_with_performance = [];
+
+    // Jika ada perangkat
+    if ($query->num_rows() > 0) {
+
+        $perangkat_list = $query->result_array();
+
+        // ======================
+        // CABANG 1: UNIT 14,15,16,17 (RUMUS BULANAN)
+        // ======================
+        if (in_array($id_unit, [14, 15, 16, 17])) {
+
+            $total_minutes_in_month = date('t') * 24 * 60;
+
+            foreach ($perangkat_list as $perangkat) {
+                $id_perangkat = $perangkat['id_perangkat'];
+
+                // Cek status tinjut
+                $status_query = $this->Mod->GetCustome("
+                    SELECT t.status AS tinjut_status, td.status AS tinjut_detail_status
+                    FROM tinjut t
+                    LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                    WHERE td.id_perangkat = $id_perangkat
+                    AND MONTH(t.start_time) = MONTH(NOW())
+                    AND YEAR(t.start_time) = YEAR(NOW())
+                ")->row_array();
+
+                $tinjut_status = $status_query['tinjut_status'] ?? null;
+                $tinjut_detail_status = $status_query['tinjut_detail_status'] ?? null;
+
+                if (($tinjut_status == 2 || empty($tinjut_status)) && ($tinjut_detail_status == 2 || empty($tinjut_detail_status))) {
+                    $performaperangkat = 100;
+                } else {
+                    $downtime_query = $this->Mod->GetCustome("
+                        SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                        FROM tinjut t
+                        LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                        WHERE td.id_perangkat = $id_perangkat
+                        AND MONTH(t.start_time) = MONTH(NOW())
+                        AND YEAR(t.start_time) = YEAR(NOW())
+                    ")->row_array();
+
+                    $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+                    $performaperangkat = $total_minutes_in_month > 0 ? round((($total_minutes_in_month - $downtime) / $total_minutes_in_month) * 100, 2): 100;
+                }
+
+                // Tambahkan ke array
+                $perangkat['perform_percentage'] = $performaperangkat;
+                $perangkat['rumus_digunakan'] = 'BULANAN';
+                $device_with_performance[] = $perangkat;
+            }
+
+        // ======================
+        // CABANG 2: UNIT LAIN (18,17,19,20,21,22,23) - RUMUS TAHUNAN
+        // ======================
+        } elseif (in_array($id_unit, [18, 17, 19, 20, 21, 22, 23])) {
+
+            $current_year = date('Y');
+            $is_leap_year = date('L', strtotime("$current_year-01-01"));
+            $total_days_in_year = $is_leap_year ? 366 : 365;
+            $total_minutes_in_year = $total_days_in_year * 24 * 60;
+
+            foreach ($perangkat_list as $perangkat) {
+                $id_perangkat = $perangkat['id_perangkat'];
+
+                $status_query = $this->Mod->GetCustome("
+                    SELECT t.status AS tinjut_status, td.status AS tinjut_detail_status
+                    FROM tinjut t
+                    LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                    WHERE td.id_perangkat = $id_perangkat
+                    AND YEAR(t.start_time) = YEAR(NOW())
+                ")->row_array();
+
+                $tinjut_status = $status_query['tinjut_status'] ?? null;
+                $tinjut_detail_status = $status_query['tinjut_detail_status'] ?? null;
+
+                $downtime_query = $this->Mod->GetCustome("
+                    SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                    FROM tinjut t
+                    LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                    WHERE td.id_perangkat = $id_perangkat
+                    AND YEAR(t.start_time) = YEAR(NOW())
+                ")->row_array();
+
+                $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+                $performaperangkat = $total_minutes_in_year > 0 ? round(100 - (($downtime / $total_minutes_in_year) * 100), 2): 100;
+
+                $perangkat['perform_percentage'] = $performaperangkat;
+                $perangkat['rumus_digunakan'] = 'TAHUNAN';
+                $device_with_performance[] = $perangkat;
+            }
+
+        // ======================
+        // CABANG 3: UNIT LAINNYA - BERDASARKAN KODE FASILITAS
+        // ======================
+        } else {
+             // AMBIL DATA FASILITAS UNTUK MENDAPATKAN KODE FASILITAS
+            $fasilitas_data = $this->Mod->getWhere('fasilitas', array('id_fasilitas' => $fasilitas_id))->row_array();
+            $kode_fasilitas = !empty($fasilitas_data['kode']) ? $fasilitas_data['kode'] : null;
+            foreach ($perangkat_list as $perangkat) {
+                $id_perangkat = $perangkat['id_perangkat'];
+
+                // LOGIKA BERDASARKAN KODE FASILITAS
+                if ($kode_fasilitas == 1) {
+                    // FASILITAS KODE 1 - RUMUS TAHUNAN
+                    $current_year = date('Y');
+                    $is_leap_year = date('L', strtotime("$current_year-01-01"));
+                    $total_days_in_year = $is_leap_year ? 366 : 365;
+                    $total_minutes_in_year = $total_days_in_year * 24 * 60;
+
+                    // Hitung total downtime dalam menit untuk tahun berjalan
+                    $downtime_query = $this->Mod->GetCustome("
+                        SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                        FROM tinjut t
+                        LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                        WHERE td.id_perangkat = $id_perangkat
+                        AND YEAR(t.start_time) = YEAR(NOW())
+                    ")->row_array();
+                    
+                    $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+                    
+                    if ($total_minutes_in_year > 0) {
+                        $downtime_percentage = ($downtime / $total_minutes_in_year) * 100;
+                        $performaperangkat = 100 - $downtime_percentage;
+                        $performaperangkat = round($performaperangkat, 2);
+                    } else {
+                        $performaperangkat = 100;
+                    }
+
+                    $rumus_digunakan = 'TAHUNAN (KODE 1)';
+
+                } elseif ($kode_fasilitas == 2) {
+                    // FASILITAS KODE 2 - RUMUS BULANAN
+                    $total_minutes_in_month = date('t') * 24 * 60;
+                    
+                    // Cek status dari tinjut dan tinjut_detail
+                    $status_query = $this->Mod->GetCustome("
+                        SELECT t.status AS tinjut_status, td.status AS tinjut_detail_status
+                        FROM tinjut t
+                        LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                        WHERE td.id_perangkat = $id_perangkat
+                        AND MONTH(t.start_time) = MONTH(NOW()) 
+                        AND YEAR(t.start_time) = YEAR(NOW())
+                    ")->row_array();
+                    
+                    $tinjut_status = !empty($status_query['tinjut_status']) ? $status_query['tinjut_status'] : null;
+                    $tinjut_detail_status = !empty($status_query['tinjut_detail_status']) ? $status_query['tinjut_detail_status'] : null;
+
+                    // Jika status di kedua tabel adalah 2, atau kosong, set performa 100%
+                    if (($tinjut_status == 2 || empty($tinjut_status)) && ($tinjut_detail_status == 2 || empty($tinjut_detail_status))) {
+                        $performaperangkat = 100;
+                    } else {
+                        // Hitung downtime bulan berjalan
+                        $downtime_query = $this->Mod->GetCustome("
+                            SELECT SUM(TIMESTAMPDIFF(MINUTE, t.start_time, t.end_time)) AS total_downtime 
+                            FROM tinjut t
+                            LEFT JOIN tinjut_detail td ON td.id_tinjut = t.id_tinjut
+                            WHERE td.id_perangkat = $id_perangkat
+                            AND MONTH(t.start_time) = MONTH(NOW()) 
+                            AND YEAR(t.start_time) = YEAR(NOW())
+                        ")->row_array();
+                        
+                        $downtime = !empty($downtime_query['total_downtime']) ? $downtime_query['total_downtime'] : 0;
+                        
+                        if ($total_minutes_in_month > 0) {
+                            $performaperangkat = (($total_minutes_in_month - $downtime) / $total_minutes_in_month) * 100;
+                            $performaperangkat = round($performaperangkat, 2);
+                        } else {
+                            $performaperangkat = 100;
+                        }
+                    }
+
+                    $rumus_digunakan = 'BULANAN (KODE 2)';
+
+                } else {
+                    // DEFAULT JIKA TIDAK ADA KODE FASILITAS YANG COCOK
+                    $performaperangkat = 100;
+                    $rumus_digunakan = 'DEFAULT';
+                }
+
+                // Tambahkan ke array
+                $perangkat['perform_percentage'] = $performaperangkat;
+                $perangkat['rumus_digunakan'] = $rumus_digunakan;
+                $device_with_performance[] = $perangkat;
+            }
+        }
+
+        // Response success
+        $data = [
+            'status' => 'success',
+            'jumlah_perangkat' => count($device_with_performance),
+            'perangkat' => $device_with_performance,
+            'info_fasilitas' => [
+                'id_unit' => $id_unit,
+              
+                'nama_fasilitas' => !empty($fasilitas_data['nama_fasilitas']) ? $fasilitas_data['nama_fasilitas'] : 'Tidak diketahui'
+            ]
+        ];
+
+    } else {
+        // Response jika tidak ada perangkat
+        $data = [
+            'status' => 'error',
+            'message' => 'Tidak ada perangkat terhubung dengan fasilitas ini'
+        ];
+    }
+
+    echo json_encode($data);
+}

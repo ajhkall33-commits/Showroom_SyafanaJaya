@@ -16,7 +16,7 @@
         if (element.attr('href').indexOf("index.html") !== -1) {
           element.parents('.nav-item').last().addClass('active');
           if (element.parents('.sub-menu').length) {
-            element.closest('.collapse').addClass('show');
+            element.parents('.collapse').addClass('show');
             element.addClass('active');
           }
         }
@@ -25,7 +25,7 @@
         if (element.attr('href').indexOf(current) !== -1) {
           element.parents('.nav-item').last().addClass('active');
           if (element.parents('.sub-menu').length) {
-            element.closest('.collapse').addClass('show');
+            element.parents('.collapse').addClass('show');
             element.addClass('active');
           }
           if (element.parents('.submenu-item').length) {
@@ -46,10 +46,15 @@
       addActiveClass($this);
     })
 
-    //Close other submenu in sidebar on opening any
+    //Close other submenu in sidebar on opening any (exclude parent/ancestor collapses)
+    sidebar.on('show.bs.collapse', '.collapse', function(e) {
+      e.stopPropagation();
+      var $this = $(this);
+      sidebar.find('.collapse.show').not($this.parents('.collapse')).not($this).collapse('hide');
+    });
 
-    sidebar.on('show.bs.collapse', '.collapse', function() {
-      sidebar.find('.collapse.show').collapse('hide');
+    sidebar.on('hide.bs.collapse', '.collapse', function(e) {
+      e.stopPropagation();
     });
 
 
